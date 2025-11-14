@@ -8,6 +8,9 @@ on:
 jobs:
   fishtest:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        instance: [1, 2, 3, 4, 5]
 
     steps:
       - name: Checkout Stockfish
