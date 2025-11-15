@@ -31,6 +31,18 @@ jobs:
           cd fishtest
           uv sync
 
+      - name: Get Fishtest commit hash
+        id: fishtest_hash
+        run: |
+          cd fishtest
+          echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Restore cached fastchess to reduce startup time
+        uses: actions/cache@v4.3.0
+        with:
+          path: fishtest/worker/testing/fastchess*
+          key: fastchess-${{ steps.fishtest_hash.outputs.hash }}
+
       - name: Worker
         env:
           FISHTEST_USER: ${{ secrets.FISHTEST_USER }}
@@ -39,5 +51,5 @@ jobs:
           #!/bin/bash
           set -e
 
-          timeout 6h python3 fishtest/worker/worker.py "$FISHTEST_USER" "$FISHTEST_PASSWORD" --concurrency MAX-1
+          timeout --signal=SIGTERM 345m python3 fishtest/worker/worker.py "$FISHTEST_USER" "$FISHTEST_PASSWORD" --concurrency MAX
         continue-on-error: true
